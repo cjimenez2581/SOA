@@ -6,9 +6,6 @@ El reporsitorio esta estructurado de la siguiente forma.
 
 ```
 .
-├── build
-│   ├── child-test
-│   └── tarea_corta
 ├── Makefile
 ├── prog
 │   ├── child-test.c
