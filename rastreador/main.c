@@ -19,7 +19,7 @@
 #include <unistd.h> 
 #include <sys/wait.h>
  
-int main (int argc, char** argv) 
+int main (int argc, char **argv) 
 {
     int ret, status;
     pid_t child_pid; 
@@ -31,8 +31,8 @@ int main (int argc, char** argv)
     if( child_pid == 0 ){
       //child: The return of fork() is zero                                                                                                                                    
       printf("Child: I'm the child: %d\n", child_pid);
-       static char *argv[]={"echo","Foo is my name.",NULL};
-       execvp ("./child", argv);
+       //static char *argv[]={"echo","Foo is my name.",NULL};
+       execvp (argv[1], argv+1);
 
     }
     if (child_pid > 0){
