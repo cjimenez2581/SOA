@@ -1,2 +1,3 @@
 tarea_corta: main.c
-	gcc -o tarea_corta main.c -I.
+	mkdir -p build
+	gcc -o build/tarea_corta main.c -I.
