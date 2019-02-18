@@ -16,15 +16,24 @@
 
 #include <stdio.h> 
 #include <sys/types.h> 
+#include <sys/user.h>
 #include <unistd.h> 
 #include <sys/wait.h>
- 
+#include <sys/ptrace.h>
+
+//Determine 32/64 bits
+#if __WORDSIZE == 64
+#define CALL(reg) reg.orig_rax
+#else
+#define REG(reg) reg.orig_eax
+#endif
+
 int main (int argc, char **argv) 
 {
     //input logic parameters/variables
-    char ptrace_request_type ="";
+    char ptrace_request_type ='\0';
     char *prog_value = NULL;
-    char option="";
+    char option='\0';
     int parameters_read = 0;
 
 
@@ -59,7 +68,7 @@ int main (int argc, char **argv)
             return 1;
          
         default:
-          abort ();
+          exit (EXIT_FAILURE);
       }
       
     }
@@ -84,19 +93,18 @@ int main (int argc, char **argv)
     if( child_pid == 0 ){
       //child: The return of fork() is zero                                                                                                                                    
       printf("Child: I'm the child: %d\n", child_pid);
-       //static char *argv[]={"echo","Foo is my name.",NULL};
-       execvp (argv[1], argv+1);
+      ptrace(PTRACE_TRACEME, 0, NULL, NULL);  
+      execvp (argv[2], argv+3);
 
     }
     if (child_pid > 0){
       //parent: The return of fork() is the process of id of the child                                                                                                         
-
-      printf("Parent: I'm the parent: %d\n", (int) getpid ());
-       if ((ret = waitpid (child_pid, &status, 0)) == -1)
-           printf ("parent:error\n");
-
-      if (ret == child_pid)
-          printf ("Parent: Child process waited for.\n");
+      while(waitpid(child_pid, &status, 0) && ! WIFEXITED(status)) {
+      struct user_regs_struct regs; 
+      ptrace(PTRACE_GETREGS, child_pid, NULL, &regs);
+      fprintf(stderr, "system call %lld from pid %d\n", CALL(regs), child_pid);
+      ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
+    }
 
     }else{
       //error: The return of fork() is negative                                                                                                                                
