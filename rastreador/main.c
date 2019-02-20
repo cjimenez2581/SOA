@@ -21,6 +21,8 @@
 #include <sys/wait.h>
 #include <sys/ptrace.h>
 
+#include <termios.h>
+
 //Determine 32/64 bits
 #if __WORDSIZE == 64
 #define CALL(reg) reg.orig_rax
@@ -40,9 +42,10 @@ void push(Node ** head, int systemCallId);
 void increaseCount(Node ** head, int systemCallId);
 void printList(Node * head);
 void printHorizontal();
+int mygetch();
 
 //functions
-void waitForEnter(char*);
+void waitForKey(char*);
 int main (int argc, char **argv) 
 {
     //input logic parameters/variables
@@ -135,7 +138,7 @@ int main (int argc, char **argv)
           increaseCount(&listProcesses, CALL(regs));
           
           if(ptrace_request_type == 'V'){
-              waitForEnter("Press Enter to continue...\n");
+              waitForKey("Press any key to continue...\n");
           }
       
           ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
@@ -152,14 +155,11 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS; 
 } 
 
-void waitForEnter(char* message) {
+void waitForKey(char* message) {
     if(message != NULL){
       printf("%s", message);
     }
-    do {
-        char buffer[2];
-        fgets(buffer, sizeof(buffer), stdin); // waits for the enter key is pressed
-    } while(0);
+    mygetch();
 }
 
 //adds at the end
@@ -204,7 +204,7 @@ void increaseCount(Node ** head, int systemCallId) {
 }
 
 void printList(Node * head) {
-    waitForEnter("Press Enter to continue and see the report\n");
+    waitForKey("Press any key to continue and see the report\n");
     Node * current = head;
     printf("\n\n******** START REPORT ********\n");
     printf("System Call ID\tTimes Called\n");
@@ -226,4 +226,21 @@ void printHorizontal(){
             printf("\n");
         }
     }
+}
+
+
+//Taken from https://faq.cprogramming.com/cgi-bin/smartfaq.cgi?id=1043284385&answer=1042856625
+int mygetch ( ) 
+{
+  int ch;
+  struct termios oldt, newt;
+  
+  tcgetattr ( STDIN_FILENO, &oldt );
+  newt = oldt;
+  newt.c_lflag &= ~( ICANON | ECHO );
+  tcsetattr ( STDIN_FILENO, TCSANOW, &newt );
+  ch = getchar();
+  tcsetattr ( STDIN_FILENO, TCSANOW, &oldt );
+  
+  return ch;
 }
