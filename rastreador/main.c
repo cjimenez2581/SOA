@@ -178,7 +178,7 @@ void increaseCount(Node ** head, int systemCallId) {
     if (*head == NULL) {
         push(head, systemCallId);
     }
-
+    //firt element, so let's increase
     if ((*head)->systemCallId == systemCallId) {
         found++;
         int count = (*head)->count + 1;
@@ -187,6 +187,7 @@ void increaseCount(Node ** head, int systemCallId) {
 
     current = (*head)->next;
     while (current) {
+        //found, so increase
         if (current->systemCallId == systemCallId) {
             found++;
             int count = current->count + 1;
@@ -195,7 +196,7 @@ void increaseCount(Node ** head, int systemCallId) {
         }
         current  = current->next;
     }
-    
+    //new element
     if(found == 0){
         push(head, systemCallId);
     }
@@ -204,11 +205,25 @@ void increaseCount(Node ** head, int systemCallId) {
 void printList(Node * head) {
     waitForEnter("Press Enter to continue and see the report\n");
     Node * current = head;
-    printf("\n\n****** START REPORT ******\n");
+    printf("\n\n******** START REPORT ********\n");
+    printf("System Call ID\tTimes Called\n");
+    for(int i=0;i<30;i++)
+    {
+        printf("%s", "*");
+        if(i == 29){
+            printf("\n");
+        }
+    }
     while (current != NULL) {
         //TODO add process name from ID
-        printf("ProcessId %d was called %d times\n", current->systemCallId, current->count);
+        printf("%d\t\t%d\n", current->systemCallId, current->count);
         current = current->next;
     }
-    printf("****** END REPORT ******\n");
+   for(int i=0;i<30;i++)
+    {
+        printf("%s", "*");
+        if(i == 29){
+            printf("\n");
+        }
+    }
 }
