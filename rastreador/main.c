@@ -39,6 +39,7 @@ struct Node *current = NULL;
 void push(Node ** head, int systemCallId);
 void increaseCount(Node ** head, int systemCallId);
 void printList(Node * head);
+void printHorizontal();
 
 //functions
 void waitForEnter(char*);
@@ -207,19 +208,18 @@ void printList(Node * head) {
     Node * current = head;
     printf("\n\n******** START REPORT ********\n");
     printf("System Call ID\tTimes Called\n");
-    for(int i=0;i<30;i++)
-    {
-        printf("%s", "*");
-        if(i == 29){
-            printf("\n");
-        }
-    }
+    
+    printHorizontal();
     while (current != NULL) {
         //TODO add process name from ID
         printf("%d\t\t%d\n", current->systemCallId, current->count);
         current = current->next;
     }
-   for(int i=0;i<30;i++)
+    printHorizontal();
+}
+
+void printHorizontal(){
+    for(int i=0;i<30;i++)
     {
         printf("%s", "*");
         if(i == 29){
