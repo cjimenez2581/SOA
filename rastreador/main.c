@@ -28,7 +28,20 @@
 #define REG(reg) reg.orig_eax
 #endif
 
-int waitForEnter();
+typedef struct node {
+    int systemCallId;
+    int count;
+    struct node * next;
+} Node;
+
+struct Node *head = NULL;
+struct Node *current = NULL;
+void push(Node ** head, int systemCallId);
+void increaseCount(Node ** head, int systemCallId);
+void printList(Node * head);
+
+//functions
+void waitForEnter(char*);
 int main (int argc, char **argv) 
 {
     //input logic parameters/variables
@@ -36,14 +49,17 @@ int main (int argc, char **argv)
     char *prog_value = NULL;
     char option='\0';
     
-    //simulate boolean
+    //simulates boolean
     int parameters_read = 0;
     int hasOptParam = 0;
 
     //processing logic parameters/variables
     int ret, status;
-    pid_t child_pid; 
- 
+    pid_t child_pid;
+    
+    //list
+     Node * listProcesses = NULL;// malloc(sizeof(Node));
+    
 
     //parameter input logic
     while ((option = getopt (argc, argv, "v:V:")) != -1 && parameters_read<1){
@@ -111,15 +127,17 @@ int main (int argc, char **argv)
     if (child_pid > 0){
       //parent: The return of fork() is the process of id of the child                                                                                                         
       while(waitpid(child_pid, &status, 0) && ! WIFEXITED(status)) {
-      struct user_regs_struct regs; 
-      ptrace(PTRACE_SYSCALL, child_pid, NULL, &regs);
-      fprintf(stderr, "system call %lld from pid %d\n", CALL(regs), child_pid);
+          struct user_regs_struct regs;
+          ptrace(PTRACE_GETREGS, child_pid, NULL, &regs);
+          //TODO add process name from ID
+          fprintf(stderr, "system call %lld from pid %d\n", CALL(regs), child_pid);
+          increaseCount(&listProcesses, CALL(regs));
+          
+          if(ptrace_request_type == 'V'){
+              waitForEnter("Press Enter to continue...\n");
+          }
       
-      if(ptrace_request_type == 'V'){
-          waitForEnter();
-      }
-      
-      ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
+          ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
     }
 
     }else{
@@ -129,12 +147,68 @@ int main (int argc, char **argv)
       _exit(EXIT_FAILURE); //exit failure, hard                                                                                                                                           
 
     }
+     printList(listProcesses);
     return EXIT_SUCCESS; 
 } 
 
-int waitForEnter() {
+void waitForEnter(char* message) {
+    if(message != NULL){
+      printf("%s", message);
+    }
     do {
-        char buf[2];
-        fgets(buf, sizeof(buf), stdin); // waits until enter to continue
+        char buffer[2];
+        fgets(buffer, sizeof(buffer), stdin); // waits for the enter key is pressed
     } while(0);
+}
+
+//adds at the end
+void push(Node ** head, int systemCallId) {
+    Node * newNode;
+    newNode = malloc(sizeof(Node));
+
+    newNode->systemCallId = systemCallId;
+    newNode->count = 1;
+    newNode->next = *head;
+    (*head) = newNode;
+}
+
+void increaseCount(Node ** head, int systemCallId) {
+    Node *current;
+    int found = 0;
+    if (*head == NULL) {
+        push(head, systemCallId);
+    }
+
+    if ((*head)->systemCallId == systemCallId) {
+        found++;
+        int count = (*head)->count + 1;
+        (*head)->count = count;
+    }
+
+    current = (*head)->next;
+    while (current) {
+        if (current->systemCallId == systemCallId) {
+            found++;
+            int count = current->count + 1;
+            current->count = count;
+            break;
+        }
+        current  = current->next;
+    }
+    
+    if(found == 0){
+        push(head, systemCallId);
+    }
+}
+
+void printList(Node * head) {
+    waitForEnter("Press Enter to continue and see the report\n");
+    Node * current = head;
+    printf("\n\n****** START REPORT ******\n");
+    while (current != NULL) {
+        //TODO add process name from ID
+        printf("ProcessId %d was called %d times\n", current->systemCallId, current->count);
+        current = current->next;
+    }
+    printf("****** END REPORT ******\n");
 }
