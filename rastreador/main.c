@@ -28,14 +28,17 @@
 #define REG(reg) reg.orig_eax
 #endif
 
+int waitForEnter();
 int main (int argc, char **argv) 
 {
     //input logic parameters/variables
     char ptrace_request_type ='\0';
     char *prog_value = NULL;
     char option='\0';
+    
+    //simulate boolean
     int parameters_read = 0;
-
+    int hasOptParam = 0;
 
     //processing logic parameters/variables
     int ret, status;
@@ -50,10 +53,12 @@ int main (int argc, char **argv)
         case 'v':
           ptrace_request_type = 'v';
           prog_value = optarg;
+          hasOptParam++;
           break;
         case 'V':
           ptrace_request_type = 'V';
           prog_value = optarg;
+          hasOptParam++;
           break;
 
         case '?':
@@ -62,13 +67,13 @@ int main (int argc, char **argv)
           else if (isprint (optopt))
             fprintf (stderr, "Unknown option `-%c'.\n", optopt);
           else
-            fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
+            fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
             return 1;
          
-        default:
-          exit (EXIT_FAILURE);
+        default: //default values
+          ptrace_request_type = 'v';
+          prog_value = optarg;
+          break;
       }
       
     }
@@ -93,16 +98,27 @@ int main (int argc, char **argv)
     if( child_pid == 0 ){
       //child: The return of fork() is zero                                                                                                                                    
       printf("Child: I'm the child: %d\n", child_pid);
-      ptrace(PTRACE_TRACEME, 0, NULL, NULL);  
-      execvp (argv[2], argv+3);
+      ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+      
+      if(hasOptParam >= 1){
+          execvp (argv[2], argv+3);
+      }else{
+          execvp (argv[1], argv+2);
+      }
+      
 
     }
     if (child_pid > 0){
       //parent: The return of fork() is the process of id of the child                                                                                                         
       while(waitpid(child_pid, &status, 0) && ! WIFEXITED(status)) {
       struct user_regs_struct regs; 
-      ptrace(PTRACE_GETREGS, child_pid, NULL, &regs);
+      ptrace(PTRACE_SYSCALL, child_pid, NULL, &regs);
       fprintf(stderr, "system call %lld from pid %d\n", CALL(regs), child_pid);
+      
+      if(ptrace_request_type == 'V'){
+          waitForEnter();
+      }
+      
       ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
     }
 
@@ -116,3 +132,9 @@ int main (int argc, char **argv)
     return EXIT_SUCCESS; 
 } 
 
+int waitForEnter() {
+    do {
+        char buf[2];
+        fgets(buf, sizeof(buf), stdin); // waits until enter to continue
+    } while(0);
+}
