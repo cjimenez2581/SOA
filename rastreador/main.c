@@ -23,6 +23,8 @@
 
 #include <termios.h>
 
+#include <string.h>
+
 //Determine 32/64 bits
 #if __WORDSIZE == 64
 #define CALL(reg) reg.orig_rax
@@ -31,16 +33,18 @@
 #endif
 
 typedef struct node {
+    char* name;
+    char* parameters;
     int systemCallId;
     int count;
     struct node * next;
 } Node;
-
-struct Node *head = NULL;
-struct Node *current = NULL;
 void push(Node ** head, int systemCallId);
-void increaseCount(Node ** head, int systemCallId);
+void pushContent(Node** head, int systemCallId, char* name, char* parameters);
+void increaseCount(Node** head, int systemCallId);
+Node* getById(Node** head, int systemCallId);
 void printList(Node * head);
+void deleteList(Node** head);
 void printHorizontal();
 int mygetch();
 
@@ -63,8 +67,24 @@ int main (int argc, char **argv)
     
     //list
      Node * listProcesses = NULL;// malloc(sizeof(Node));
+  
+     //load system call names files
+    FILE* file = fopen("systemCalls.csv", "r");//We got this file from
+    //http://blog.rchapman.org/posts/Linux_System_Call_Table_for_x86_64/
+    char line[1024];
+    while (fgets(line, 1024, file)){
+        int id =0;
+        char* tmp = strdup(line);
+        char* field = NULL;
+        char* name = NULL;
+        field = strsep(&tmp, "|");//https://stackoverflow.com/questions/31377038/split-a-char-array-into-separate-strings
+        id = atoi(field);
+        name = strsep(&tmp, "|");//name
+        field = strsep(&tmp, "|");//content
+        pushContent(&listProcesses, id, name, field);
+    }
     
-
+    fclose(file);
     //parameter input logic
     while ((option = getopt (argc, argv, "v:V:")) != -1 && parameters_read<1){
       parameters_read++;
@@ -133,9 +153,16 @@ int main (int argc, char **argv)
       while(waitpid(child_pid, &status, 0) && ! WIFEXITED(status)) {
           struct user_regs_struct regs;
           ptrace(PTRACE_GETREGS, child_pid, NULL, &regs);
-          //TODO add process name from ID
-          fprintf(stderr, "system call %lld from pid %d\n", CALL(regs), child_pid);
-          increaseCount(&listProcesses, CALL(regs));
+          int systemCallId = CALL(regs);
+          increaseCount(&listProcesses, systemCallId);
+          if(__WORDSIZE == 32){
+              //for 32 we can only show the system call ID
+              fprintf(stderr, "system call %d from pid %d\n", systemCallId, child_pid);
+          }else{
+              Node* systemCall = getById(&listProcesses, systemCallId);
+              
+              fprintf(stderr, "system call: %s with Id: %d from pid %d\n", systemCall->name, systemCallId, child_pid);
+          }
           
           if(ptrace_request_type == 'V'){
               waitForKey("Press any key to continue...\n");
@@ -151,7 +178,8 @@ int main (int argc, char **argv)
       _exit(EXIT_FAILURE); //exit failure, hard                                                                                                                                           
 
     }
-     printList(listProcesses);
+    printList(listProcesses);
+    deleteList(&listProcesses);
     return EXIT_SUCCESS; 
 } 
 
@@ -162,13 +190,28 @@ void waitForKey(char* message) {
     mygetch();
 }
 
-//adds at the end
+//adds at the end, normally use when a systemCallId is added but it's not on the file
 void push(Node ** head, int systemCallId) {
     Node * newNode;
     newNode = malloc(sizeof(Node));
 
     newNode->systemCallId = systemCallId;
     newNode->count = 1;
+    newNode->name = NULL;
+    newNode->parameters = NULL;
+    newNode->next = *head;
+    (*head) = newNode;
+}
+
+void pushContent(Node** head, int systemCallId, char* name, char* parameters){
+    Node * newNode;
+    newNode = malloc(sizeof(Node));
+
+    newNode->systemCallId = systemCallId;
+    newNode->count = 0;//just filling it, it has not been called...yet or ever
+    newNode->name = name;
+    parameters[strlen(parameters)-1]=0;//removing the \n
+    newNode->parameters = parameters;
     newNode->next = *head;
     (*head) = newNode;
 }
@@ -203,24 +246,59 @@ void increaseCount(Node ** head, int systemCallId) {
     }
 }
 
+Node* getById(Node** head, int systemCallId){
+    Node *previous, *current;
+
+    if (*head == NULL) {
+        return NULL;
+    }
+
+    if ((*head)->systemCallId == systemCallId) {
+        return *head;
+    }
+
+    previous = current = (*head)->next;
+    while (current) {
+        if (current->systemCallId == systemCallId) {
+            return current;
+        }
+
+        previous = current;
+        current  = current->next;
+    }
+    return NULL;
+}
+
 void printList(Node * head) {
     waitForKey("Press any key to continue and see the report\n");
     Node * current = head;
     printf("\n\n******** START REPORT ********\n");
-    printf("System Call ID\tTimes Called\n");
+    printf("ID-Count\tSignature\n");
     
     printHorizontal();
     while (current != NULL) {
-        //TODO add process name from ID
-        printf("%d\t\t%d\n", current->systemCallId, current->count);
+        if(current->count > 0){
+            printf("%d-%d\t    %s(%s)\n", current->systemCallId, current->count, current->name, current->parameters);
+        }
         current = current->next;
     }
     printHorizontal();
 }
 
+void deleteList(Node** head){
+    Node* current = *head; 
+    Node* next; 
+  
+   while (current != NULL)  { 
+       next = current->next; 
+       free(current); 
+       current = next; 
+   }
+   *head = NULL; 
+}
+
 void printHorizontal(){
-    for(int i=0;i<30;i++)
-    {
+    for(int i=0;i<30;i++){
         printf("%s", "*");
         if(i == 29){
             printf("\n");

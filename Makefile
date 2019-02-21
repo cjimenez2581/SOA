@@ -2,6 +2,7 @@ all: create_build tarea_corta child-test
 
 create_build:
 	mkdir -p build
+	cp systemCalls.csv build/systemCalls.csv
 
 tarea_corta: create_build
 	gcc -o build/tarea_corta rastreador/main.c
