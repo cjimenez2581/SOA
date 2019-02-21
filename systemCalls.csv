@@ -22,7 +22,7 @@
 21|sys_access|const char *filename, int mode
 22|sys_pipe|int *filedes
 23|sys_select|int n, fd_set *inp, fd_set *outp, fd_set*exp, struct timeval *tvp, 
-24|sys_sched_yield|, 
+24|sys_sched_yield|
 25|sys_mremap|unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr, 
 26|sys_msync|unsigned long start, size_t len, int flags
 27|sys_mincore|unsigned long start, size_t len, unsigned char *vec
@@ -32,7 +32,7 @@
 31|sys_shmctl|int shmid, int cmd, struct shmid_ds *buf
 32|sys_dup|unsigned int fildes
 33|sys_dup2|unsigned int oldfd, unsigned int newfd
-34|sys_pause|, 
+34|sys_pause|
 35|sys_nanosleep|struct timespec *rqtp, struct timespec *rmtp
 36|sys_getitimer|int which, struct itimerval *value
 37|sys_alarm|unsigned int seconds
@@ -55,8 +55,8 @@
 54|sys_setsockopt|int fd, int level, int optname, char *optval, int optlen, 
 55|sys_getsockopt|int fd, int level, int optname, char *optval, int *optlen, 
 56|sys_clone|unsigned long clone_flags, unsigned long newsp, void *parent_tid, void *child_tid
-57|sys_fork|   
-58|sys_vfork|, 
+57|sys_fork|  
+58|sys_vfork|
 59|sys_execve|const char *filename, const char *const argv[], const char *const envp[]
 60|sys_exit|int error_code
 61|sys_wait4|pid_t upid, int *stat_addr, int options, struct rusage *ru
@@ -248,7 +248,7 @@
 247|sys_waitid|int which, pid_t upid, struct siginfo *infop, int options, struct rusage *ru, 
 248|sys_add_key|const char *_type, const char *_description, const void *_payload, size_t plen
 249|sys_request_key|const char *_type, const char *_description, const char *_callout_info, key_serial_t destringid
-250|sys_keyctl|int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5, 
+250|sys_keyctl|int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5
 251|sys_ioprio_set|int which, int who, int ioprio
 252|sys_ioprio_get|int which, int who
 253|sys_inotify_init|
@@ -258,12 +258,12 @@
 257|sys_openat|int dfd, const char *filename, int flags, int mode
 258|sys_mkdirat|int dfd, const char *pathname, int mode
 259|sys_mknodat|int dfd, const char *filename, int mode, unsigned dev
-260|sys_fchownat|int dfd, const char *filename, uid_t user, gid_t group, int flag, 
+260|sys_fchownat|int dfd, const char *filename, uid_t user, gid_t group, int flag
 261|sys_futimesat|int dfd, const char *filename, struct timeval *utimes
 262|sys_newfstatat|int dfd, const char *filename, struct stat *statbuf, int flag
 263|sys_unlinkat|int dfd, const char *pathname, int flag
 264|sys_renameat|int oldfd, const char *oldname, int newfd, const char *newname
-265|sys_linkat|int oldfd, const char *oldname, int newfd, const char *newname, int flags, 
+265|sys_linkat|int oldfd, const char *oldname, int newfd, const char *newname, int flags
 266|sys_symlinkat|const char *oldname, int newfd, const char *newname
 267|sys_readlinkat|int dfd, const char *pathname, char *buf, int bufsiz
 268|sys_fchmodat|int dfd, const char *filename, mode_t mode
@@ -293,8 +293,8 @@
 292|sys_dup3|unsigned int oldfd, unsigned int newfd, int flags
 293|sys_pipe2|int *filedes, int flags
 294|sys_inotify_init1|int flags
-295|sys_preadv|unsigned long fd, const struct iovec *vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h, 
-296|sys_pwritev|unsigned long fd, const struct iovec *vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h, 
+295|sys_preadv|unsigned long fd, const struct iovec *vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h 
+296|sys_pwritev|unsigned long fd, const struct iovec *vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h
 297|sys_rt_tgsigqueueinfo|pid_t tgid, pid_t pid, int sig, siginfo_t *uinfo
 298|sys_perf_event_open|struct perf_event_attr *attr_uptr, pid_t pid, int cpu, int group_fd, unsigned long flags, 
 299|sys_recvmmsg|int fd|struct msghdr *mmsg, unsigned int vlen, unsigned int flags, struct timespec *timeout, 
@@ -302,7 +302,7 @@
 301|sys_fanotify_mark|long fanotify_fd, long flags, __u64 mask, long dfd, long pathname
 302|sys_prlimit64|pid_t pid, unsigned int resource, const struct rlimit64 *new_rlim, struct rlimit64 *old_rlim
 303|sys_name_to_handle_at|int dfd, const char *name, struct file_handle *handle, int *mnt_id, int flag, 
-304|sys_open_by_handle_at|int dfd, const char *name, struct file_handle *handle, int *mnt_id, int flags, 
+304|sys_open_by_handle_at|int dfd, const char *name, struct file_handle *handle, int *mnt_id, int flags
 305|sys_clock_adjtime|clockid_t which_clock, struct timex *tx
 306|sys_syncfs|int fd
 307|sys_sendmmsg|int fd, struct mmsghdr *mmsg, unsigned int vlen, unsigned int flags
@@ -310,7 +310,7 @@
 309|sys_getcpu|unsigned *cpup, unsigned *nodep, struct getcpu_cache *unused
 310|sys_process_vm_readv|pid_t pid, const struct iovec *lvec, unsigned long liovcnt, const struct iovec *rvec, unsigned long riovcnt, unsigned long flags
 311|sys_process_vm_writev|pid_t pid, const struct iovec *lvec, unsigned long liovcnt, const struct iovcc *rvec, unsigned long riovcnt, unsigned long flags
-312|sys_kcmp|pid_t pid1, pid_t pid2, int type, unsigned long idx1, unsigned long idx2, 
+312|sys_kcmp|pid_t pid1, pid_t pid2, int type, unsigned long idx1, unsigned long idx2
 313|sys_finit_module|int fd, const char __user *uargs, int flags
 314|sys_sched_setattr|pid_t pid, struct sched_attr __user *attr, unsigned int flags
 315|sys_sched_getattr|pid_t pid, struct sched_attr __user *attr, unsigned int size, unsigned int flags
