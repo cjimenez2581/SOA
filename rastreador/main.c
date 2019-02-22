@@ -144,6 +144,7 @@ int main (int argc, char **argv)
               fprintf(stderr, "System call %d from pid %d\n", systemCallId, child_pid);
           }else{
               Node* systemCall = getById(&listProcesses, systemCallId);
+              //this is not completely necessary, but it's safe to have it
               if(systemCall != NULL){
                   fprintf(stderr, "System call: %s with Id: %d from pid %d\n", systemCall->name, systemCallId, child_pid);
               }else{
@@ -183,7 +184,7 @@ void waitForKey(char* message) {
 void push(Node ** head, int systemCallId) {
     Node * newNode;
     newNode = malloc(sizeof(Node));
-
+ 
     newNode->systemCallId = systemCallId;
     newNode->count = 1;
     newNode->name = "Unknown name";

@@ -5,7 +5,7 @@ create_build:
 	cp systemCalls.csv build/systemCalls.csv
 
 tarea_corta: create_build
-	gcc -o build/tarea_corta rastreador/main.c
+	gcc -o build/rastreador rastreador/main.c
 
 child-test: create_build
-	gcc -o build/child-test prog/child-test.c
+	gcc -o build/test prog/child-test.c

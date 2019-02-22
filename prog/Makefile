@@ -1,3 +1,3 @@
 child-test: child-test.c
 	mkdir -p ../build
-	gcc -o build/child-test child-test.c
+	gcc -o build/test child-test.c
