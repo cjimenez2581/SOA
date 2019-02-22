@@ -36,3 +36,14 @@ donde `[opciones de rastreador]` son:
 ./rastreador -v -g ./prog
 ```
 2.Al ejecutar en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parámetros)
+
+## Autores.
+*Marco Acuña Vargas.*
+
+*Ricardo Alfaro Villalobos.*
+
+*Randall Jiménez Morales.*
+
+*Christopher Jiménez Valverde.*
+
+*Renán Morera Salazar.*
