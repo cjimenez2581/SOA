@@ -15,7 +15,7 @@ La compilación del proyecto esta organizada por el archivo `Makefile`. Este cre
 ```
 make Makefile
 ```
-2.Mover el programa (de ahora en adelante "prog") que va a ser rastreado al folder `build`
+2.Mover el programa (de ahora en adelante "prog") que va a ser rastreado al folder `build`.
 3.Ejecutar el programa rastreador con la siguiente sintáxis
 ```
 .\rastreador [opciones de rastreador] .\prog [opciones de prog]
