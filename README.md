@@ -15,14 +15,20 @@ La compilación del proyecto esta organizada por el archivo `Makefile`. Este cre
 ```
 make Makefile
 ```
-2.Mover el programa (de ahora en adelante "prog") que va a ser rastreado al folder `build`.
+2.Mover el programa (de ahora en adelante "prog") que va a ser rastreado al folder `build`
+
 3.Ejecutar el programa rastreador con la siguiente sintáxis
+
+
 ```
 .\rastreador [opciones de rastreador] .\prog [opciones de prog]
 ```
 donde `[opciones de rastreador]` son:
-a. `-v` desplegará continuamente un mensaje cada vez que detecte un System Call (opción por defecto)
-b. `-V` desplegará uno a uno los mensajes, precedido por presionar una tecla
+
+&nbsp;&nbsp;&nbsp;a.`-v` desplegará continuamente un mensaje cada vez que detecte un System Call (opción por defecto)
+
+&nbsp;&nbsp;&nbsp;b.`-V` desplegará uno a uno los mensajes, precedido por presionar una tecla.
+
 4.Una vez que todos los mensajes han sido desplegados en pantalla, el programa solicita al usuario presionar una tecla para generar el reporte. Esta acción mostrara una tabla formateada con los detalles de los System Calls y a su vez escribe la misma salida a un achivo .txt dentro del folder `build`.
 ## Limitaciones.
 1.El programa falla si se pasa mas de una opcion a `rastreador`. El siguiente ejemplo resulta en error:
