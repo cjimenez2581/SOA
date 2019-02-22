@@ -1,36 +1,26 @@
-# Tarea Corta 1
-Interceptador de system calls utilizando `ptrace()`
-
-Este es un repositorio para hacer la tarea corta 1 de Sistemas operativos Avanzados
-El reporsitorio esta estructurado de la siguiente forma.
-
+# Tarea Corta 1 -- Rastreador de "System Calls"
+Este programa rastrea System Calls generados en otro proceso y crea un reporte de los mismos en dos formatos: salida de consola y un archivo .txt. Para este fin utilizamos `ptrace()` que es un system call de Linux que permite observar y controlar la ejecución de un proceso "rastreado" desde otro proceso "rastreador".
+El proyecto esta estructurado de la siguiente forma.
 ```
-.
 ├── Makefile
-├── prog
-│   ├── child-test.c
-│   └── Makefile
 ├── rastreador
 │   ├── main.c
 │   └── Makefile
+│── systemCalls.csv
 └── README.md
 ```
-
-## Uso del repositorio
-utilizar el comando `make` en el directorio root para generar el ejecutable `tarea_corta`
-(yo hice un makefile simple y borre el que fue generado por netbeans, me parece que esto
-es lo mejor dado que el profesor quiere que el `Makefile` se envie junto con los .c, o sea
-creo que el quiere que el `Makefile` sea hecho por nosotros y no por un IDE)
-
-El `Makefile` crea el directorio `build` en caso de no existir y exporta 
-ahi el ejecutable. (yo agregue build en .gitignore, para que git lo ignore
-en el momento de que suban cualquier cambio)
-
-El `Makefile` tambien compila `child-test` para usarlo para pruebas y tambien
-lo pone en `build` para que asi quede todo en el mismo lugar que `tarea_corta`
-pueda ser probado.
-
-(aqui deberian de agregarse las funcionalidades/parametros de tarea corta)
-(Un tip es que si van a editar este archivo prueben primero los cambios en dillinger.io
-este es un interprete online de markdown)
-(Es para que quede bonito =))
+La compilación del proyecto esta organizada por el archivo `Makefile`. Este crea un folder con nombre `build` en el cual se genera el ejecutable de rastreador y donde, además, se copia el archivo **systemCalls.csv** que contiene datos de los System Calls de Linux organizados en tres columnas: Id, Nombre y Parametros.
+## Uso:
+1. Dentro del folder principal del proyecto, ejecutar
+```make Makefile```
+2. Mover el programa (de ahora en adelante "prog") que va a ser rastreado al folder `build`
+3. Ejecutar el programa rastreador con la siguiente sintáxis
+```.\rastreador [opciones de rastreador] .\prog [opciones de prog]```
+donde `[opciones de rastreador]` son:
+a. `-v` desplegará continuamente un mensaje cada vez que detecte un System Call (opción por defecto)
+b. `-V` desplegará uno a uno los mensajes, precedido por presionar una tecla
+4. Una vez que todos los mensajes han sido desplegados en pantalla, el programa solicita al usuario presionar una tecla para generar el reporte. Esta acción mostrara una tabla formateada con los detalles de los System Calls y a su vez escribe la misma salida a un achivo .txt dentro del folder `build`.
+## Limitaciones.
+1. El programa falla si se pasa mas de una opcion a `rastreador`. El siguiente ejemplo resulta en error:
+```.\rastreador -v -g .\prog```
+2. Si se ejecuta en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parametros)
