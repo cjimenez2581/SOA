@@ -1,16 +1,16 @@
 # Tarea Corta 1 -- Rastreador de "System Calls"
-Este programa rastrea System Calls generados en otro proceso y crea un reporte de los mismos en dos formatos: salida de consola y un archivo .txt. Para este fin utilizamos `ptrace()` que es un system call de Linux que permite observar y controlar la ejecución de un proceso "rastreado" desde otro proceso "rastreador".
-El proyecto esta estructurado de la siguiente forma.
+Este programa rastrea System Calls generados en otro proceso y crea un reporte de los mismos en dos formatos: salida de consola y un archivo .txt cuyo nombre es de la forma **Report YYYY-MM-DD HH:mm:ss.txt**. Para este fin utilizamos `ptrace()` que es un system call de Linux que permite observar y controlar la ejecución de un proceso "rastreado" desde otro proceso "rastreador".
+
+El proyecto está estructurado de la siguiente forma:
 ```
 ├── Makefile
 ├── rastreador
 │   ├── main.c
-│   └── Makefile
 │── systemCalls.csv
 └── README.md
 ```
 La compilación del proyecto esta organizada por el archivo `Makefile`. Este crea un folder con nombre `build` en el cual se genera el ejecutable de rastreador y donde, además, se copia el archivo **systemCalls.csv** que contiene datos de los System Calls de Linux organizados en tres columnas: Id, Nombre y Parametros.
-## Uso:
+## Uso.
 1.Dentro del folder principal del proyecto, ejecutar
 ```
 make Makefile
@@ -21,7 +21,7 @@ make Makefile
 
 
 ```
-.\rastreador [opciones de rastreador] .\prog [opciones de prog]
+./rastreador [opciones de rastreador] ./prog [opciones de prog]
 ```
 donde `[opciones de rastreador]` son:
 
@@ -33,6 +33,6 @@ donde `[opciones de rastreador]` son:
 ## Limitaciones.
 1.El programa falla si se pasa mas de una opcion a `rastreador`. El siguiente ejemplo resulta en error:
 ```
-.\rastreador -v -g .\prog
+./rastreador -v -g ./prog
 ```
-2.Al ejecutar en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parametros)
+2.Al ejecutar en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parámetros)
