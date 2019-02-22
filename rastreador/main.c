@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   main.c
  * Author: nosfe
@@ -20,11 +14,11 @@
 #include <unistd.h> 
 #include <sys/wait.h>
 #include <sys/ptrace.h>
-
 #include <termios.h>
-
+#include <time.h>
 #include <string.h>
 
+#define MAX_STARS  90
 //Determine 32/64 bits
 #if __WORDSIZE == 64
 #define CALL(reg) reg.orig_rax
@@ -39,17 +33,18 @@ typedef struct node {
     int count;
     struct node * next;
 } Node;
+//functions
 void push(Node ** head, int systemCallId);
 void pushContent(Node** head, int systemCallId, char* name, char* parameters);
 void increaseCount(Node** head, int systemCallId);
 Node* getById(Node** head, int systemCallId);
+char* getFormatFileName();
 void printList(Node * head);
 void deleteList(Node** head);
 void printHorizontal();
 int mygetch();
-
-//functions
 void waitForKey(char*);
+
 int main (int argc, char **argv) 
 {
     //input logic parameters/variables
@@ -62,11 +57,11 @@ int main (int argc, char **argv)
     int hasOptParam = 0;
 
     //processing logic parameters/variables
-    int ret, status;
+    int status;
     pid_t child_pid;
     
     //list
-     Node * listProcesses = NULL;// malloc(sizeof(Node));
+     Node * listProcesses = NULL;
   
      //load system call names files
     FILE* file = fopen("systemCalls.csv", "r");//We got this file from
@@ -122,22 +117,13 @@ int main (int argc, char **argv)
     printf ("ptrace_request_type = %c, prog_value = %s\n",
           ptrace_request_type, prog_value);
 
-    //glue logic to assign 
-    //ptrace_request_type assignment to ptrace_request
-    //'v'-> PTRACE_SYSCALL
-    //'V'-> PTRACE OPTION TO NOT HALT tracee process
-    //processing logic could receive prog_value
-
-
-
     //processing logic
 
-    printf ("the main program process ID is %d\n", (int) getpid());
+    printf ("The parent process ID is %d\n", (int) getpid());
 
     child_pid = fork(); //duplicate                                                                                                                                                
     if( child_pid == 0 ){
-      //child: The return of fork() is zero                                                                                                                                    
-      printf("Child: I'm the child: %d\n", child_pid);
+      //child: The return of fork() is zero
       ptrace(PTRACE_TRACEME, 0, NULL, NULL);
       
       if(hasOptParam >= 1){
@@ -145,23 +131,25 @@ int main (int argc, char **argv)
       }else{
           execvp (argv[1], argv+2);
       }
-      
-
-    }
-    if (child_pid > 0){
+    }else if (child_pid > 0){
       //parent: The return of fork() is the process of id of the child                                                                                                         
       while(waitpid(child_pid, &status, 0) && ! WIFEXITED(status)) {
           struct user_regs_struct regs;
           ptrace(PTRACE_GETREGS, child_pid, NULL, &regs);
           int systemCallId = CALL(regs);
           increaseCount(&listProcesses, systemCallId);
+          
           if(__WORDSIZE == 32){
               //for 32 we can only show the system call ID
-              fprintf(stderr, "system call %d from pid %d\n", systemCallId, child_pid);
+              fprintf(stderr, "System call %d from pid %d\n", systemCallId, child_pid);
           }else{
               Node* systemCall = getById(&listProcesses, systemCallId);
-              
-              fprintf(stderr, "system call: %s with Id: %d from pid %d\n", systemCall->name, systemCallId, child_pid);
+              if(systemCall != NULL){
+                  fprintf(stderr, "System call: %s with Id: %d from pid %d\n", systemCall->name, systemCallId, child_pid);
+              }else{
+                  fprintf(stderr, "System call with Id: %d from pid %d\n", systemCallId, child_pid);
+              }
+             
           }
           
           if(ptrace_request_type == 'V'){
@@ -174,10 +162,11 @@ int main (int argc, char **argv)
     }else{
       //error: The return of fork() is negative                                                                                                                                
 
-      perror("fork failed");
+      perror("Fork failed");
       _exit(EXIT_FAILURE); //exit failure, hard                                                                                                                                           
 
     }
+    
     printList(listProcesses);
     deleteList(&listProcesses);
     return EXIT_SUCCESS; 
@@ -197,8 +186,8 @@ void push(Node ** head, int systemCallId) {
 
     newNode->systemCallId = systemCallId;
     newNode->count = 1;
-    newNode->name = NULL;
-    newNode->parameters = NULL;
+    newNode->name = "Unknown name";
+    newNode->parameters = "Unknown parameters";
     newNode->next = *head;
     (*head) = newNode;
 }
@@ -269,20 +258,41 @@ Node* getById(Node** head, int systemCallId){
     return NULL;
 }
 
+char* getFormatFileName(){
+    char* format = "Report %d-%d-%d %d:%d:%d.txt";
+    char* fileName = malloc (sizeof (char) * 40);;
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    sprintf(fileName, format, tm.tm_year + 1900, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    return fileName;
+}
+
 void printList(Node * head) {
-    waitForKey("Press any key to continue and see the report\n");
     Node * current = head;
-    printf("\n\n******** START REPORT ********\n");
-    printf("ID-Count\tSignature\n");
+    FILE  *report;
+    report= fopen(getFormatFileName(),"w");
+    waitForKey("Press any key to continue and see the report\n");
+    printf("\n\n\t******** START REPORT ********\n\n");
+   
+    if (report != NULL){
+        fprintf(report, "%-15s %-15s %-20s %-50s\n","ID", "Count", "Name", "Parameters");
+    }
     
-    printHorizontal();
+    printf("%-15s %-15s %-20s %-50s\n","ID", "Count", "Name", "Parameters");
+    
     while (current != NULL) {
         if(current->count > 0){
-            printf("%d-%d\t    %s(%s)\n", current->systemCallId, current->count, current->name, current->parameters);
+            printf("%-15d %-15d %-20s %-50s\n", current->systemCallId, current->count, current->name, current->parameters);
+            if (report != NULL){
+                fprintf(report, "%-15d %-15d %-20s %-50s\n",current->systemCallId, current->count, current->name, current->parameters);
+            }
         }
         current = current->next;
     }
-    printHorizontal();
+    
+    if (fclose(report)!= 0) {
+        printf( "Error closing the file Report\n" );
+    }
 }
 
 void deleteList(Node** head){
@@ -298,9 +308,9 @@ void deleteList(Node** head){
 }
 
 void printHorizontal(){
-    for(int i=0;i<30;i++){
+    for(int i=0;i<MAX_STARS;i++){
         printf("%s", "*");
-        if(i == 29){
+        if(i == MAX_STARS-1){
             printf("\n");
         }
     }
