@@ -1,4 +1,4 @@
-# Tarea Corta 1 -- Rastreador de "System Calls"
+# New Document# Tarea Corta 1 -- Rastreador de "System Calls"
 Este programa rastrea System Calls generados en otro proceso y crea un reporte de los mismos en dos formatos: salida de consola y un archivo .txt cuyo nombre es de la forma **Report YYYY-MM-DD HH:mm:ss.txt**. Para este fin utilizamos `ptrace()` que es un system call de Linux que permite observar y controlar la ejecución de un proceso "rastreado" desde otro proceso "rastreador".
 
 El proyecto está estructurado de la siguiente forma:
@@ -35,7 +35,14 @@ donde `[opciones de rastreador]` son:
 ```
 ./rastreador -v -g ./prog
 ```
-2.Al ejecutar en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parámetros)
+
+2.Si no se pasa '-v' o '-V' a como parametro a `rastreador` y se pasa un commando de Linux como el programa a rastrear nuestro codigo responde con el error `invalid option --`. Ejemplo:
+
+```
+./rastreador ls -a
+```
+
+3.Al ejecutar en una arquitectura de 32 bits la salida no incluye los detalles adicionales de los System Calls (nombre y parámetros) 
 
 ## Autores.
 *Marco Acuña Vargas.*
